@@ -21,7 +21,6 @@ httpx==0.28.1
 idna==3.10
 iniconfig==2.0.0
 packaging==24.2
-passlib==1.7.4
 pluggy==1.5.0
 psycopg2-binary==2.9.10
 pyasn1==0.6.1
@@ -49,4 +48,5 @@ typing_extensions==4.12.2
 tzdata==2025.1
 urllib3==2.3.0
 uvicorn==0.34.0
-bcrypt==4.0.1
+passlib[bcrypt]==1.7.4
+bcrypt<4
