@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
+from app.core.config import settings
 from app.main import app
 from app.database import Base, get_db
 
@@ -10,9 +10,9 @@ from app.database import Base, get_db
 # -------------------------
 # TEST DATABASE
 # -------------------------
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/test_fastapi_db"
+DATABASE_URL = settings.DATABASE_URL
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
