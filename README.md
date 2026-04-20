@@ -4,7 +4,7 @@ This project is a backend REST API built using FastAPI that supports user manage
 
 ---
 
-## 🚀 Features
+## 🚀 Features(Module 12)
 
 - User registration and authentication
 - Password hashing using bcrypt
@@ -31,11 +31,10 @@ This project is a backend REST API built using FastAPI that supports user manage
 
 ## 📁 Project Structure
 app/
-│
 
 ├── main.py
 
-├── config.py
+├── core/
 
 ├── database.py
 
@@ -45,7 +44,7 @@ app/
 
 ├── schemas/
 
-├── services/
+├── factory/
 
 └── utils/
 
@@ -54,8 +53,9 @@ tests/
 
 ├── unit/
 
-└── integration/
+├── integration/
 
+└── conftest.py
 
 docker-compose.yml
 
