@@ -51,7 +51,7 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
     ).first()
     if not db_user or not verify_password(user.password, db_user.password_hash):
         logger.warning(f"Login failed: {user.username}")
-        raise HTTPException(status_code=400, detail="Invalid credentials")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
     logger.info(f"Login success: user_id={db_user.id}")
     token = create_access_token({"sub": str(db_user.id)})
     return {

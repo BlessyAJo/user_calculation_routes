@@ -84,8 +84,8 @@ def test_login_success(client):
     "username,password,expected",
     [
         ("validuser", "password123", 200),
-        ("validuser", "wrongpass", 400),
-        ("nouser", "password123", 400),
+        ("validuser", "wrongpass", 401),
+        ("nouser", "password123", 401),
     ]
 )
 def test_login_cases(client, username, password, expected):
@@ -115,7 +115,7 @@ def test_invalid_login(client):
         "password": "wrong"
     })
 
-    assert response.status_code == 400
+    assert response.status_code == 401
 
 
 # -------------------------
