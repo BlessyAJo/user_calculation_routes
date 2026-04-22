@@ -38,6 +38,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Wait for Postgres
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for Postgres..."
+            sleep 2
+          done
 
       - name: Run pytest
         env:
@@ -48,7 +54,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 25
+          node-version: 20
 
       - name: Install frontend dependencies
         run: npm install
@@ -60,9 +66,20 @@ jobs:
       # Start FastAPI server
       # -------------------------
       - name: Start FastAPI server
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fastapi_test_db
         run: |
           uvicorn app.main:app --host 0.0.0.0 --port 8000 &
-          sleep 5
+
+      # -------------------------
+      # Wait for FastAPI
+      # -------------------------
+      - name: Wait for FastAPI
+        run: |
+          until curl -s http://localhost:8000/docs; do
+            echo "Waiting for FastAPI..."
+            sleep 2
+          done
 
       # -------------------------
       # Start frontend server
@@ -70,7 +87,16 @@ jobs:
       - name: Start frontend server
         run: |
           npx http-server ./frontend -p 8080 &
-          sleep 5
+
+      # -------------------------
+      # Wait for frontend
+      # -------------------------
+      - name: Wait for frontend
+        run: |
+          until curl -s http://localhost:8080; do
+            echo "Waiting for frontend..."
+            sleep 2
+          done
 
       # -------------------------
       # Run Playwright tests
