@@ -1,0 +1,27 @@
+{
+  "name": "user_calculation_routes",
+  "version": "1.0.0",
+  "description": "This project is a backend REST API built using FastAPI that supports user management and basic calculation operations. It uses PostgreSQL as the database, SQLAlchemy as the ORM, and Docker for containerization.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BlessyAJo/user_calculation_routes.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/BlessyAJo/user_calculation_routes/issues"
+  },
+  "homepage": "https://github.com/BlessyAJo/user_calculation_routes#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1"
+  }
+}
