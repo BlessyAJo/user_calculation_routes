@@ -1,10 +1,11 @@
-# 🧮 User Calculation API (FastAPI + PostgreSQL + Docker)
+# 🧮  User Calculation API (FastAPI + PostgreSQL + Docker + CI/CD)
 
-This project is a backend REST API built using FastAPI that supports user management and basic calculation operations. It uses PostgreSQL as the database, SQLAlchemy as the ORM, and Docker for containerization.
+This project is a full-stack backend system built using FastAPI with PostgreSQL, JWT authentication, frontend UI, automated testing, and CI/CD pipeline using GitHub Actions and Docker.
+
 
 ---
-
-## 🚀 Features(Module 12)
+# 🚀 Project Modules
+## 📦 Module 12 (Backend + Docker + DB)
 
 - User registration and authentication
 - Password hashing using bcrypt
@@ -13,6 +14,16 @@ This project is a backend REST API built using FastAPI that supports user manage
 - PostgreSQL database integration
 - Full Docker support
 - Pytest-based unit and integration testing
+
+---
+## 🌐 Module 13 (Frontend + E2E + CI/CD)
+
+- HTML frontend (Register + Login pages)
+- JavaScript API integration (fetch calls)
+- JWT stored in localStorage
+- Playwright end-to-end testing
+- GitHub Actions CI/CD pipeline
+- Automated Docker image build & push 
 
 ---
 
@@ -24,6 +35,8 @@ This project is a backend REST API built using FastAPI that supports user manage
 - Pydantic v2
 - Passlib (bcrypt)
 - Python-JOSE (JWT)
+- HTML + JavaScript
+- Playwright
 - Docker & Docker Compose
 - Pytest
 
@@ -48,14 +61,30 @@ app/
 
 └── utils/
 
+frontend/
+
+├── register.html
+
+├── login.html
+
+└── app.js
 
 tests/
+
+├── e2e/
 
 ├── unit/
 
 ├── integration/
 
 └── conftest.py
+
+.github/
+
+└── workflows/
+
+    └── test.yml
+
 
 docker-compose.yml
 
@@ -80,18 +109,47 @@ Create a .env file:
 ```bash
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/fastapi_db
 ```
-Local:
-```bash
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/fastapi_db
-```
 Docker:
 ```bash
 DATABASE_URL=postgresql://postgres:postgres@db:5432/fastapi_db
 ```
-Add local run command:
+## 🧪 Running Playwright Tests
+
+Follow this order:
+
+### 1. Install dependencies
+```bash
+pip install -r requirements.txt
+npm install
+```
+2. Install Playwright browsers
+```bash
+npx playwright install --with-deps
+```
+3. Start backend server
 ```bash
 uvicorn app.main:app --reload
 ```
+4. Start frontend server
+```bash
+cd frontend
+npx http-server .
+```
+5. Run Playwright tests
+```bash
+npx playwright test
+```
+
+🌐 Run Frontend
+```bash
+cd frontend
+npx http-server .
+```
+Open:
+
+http://localhost:8080/register.html
+
+http://localhost:8080/login.html
 
 🐳 Run with Docker 
 
@@ -109,15 +167,20 @@ Swagger UI:
 http://localhost:8000/docs
 ```
 
-🧪 Run Integration Tests
+🧪 Run Tests
 
 Inside Docker:
 ```bash
 docker compose exec web pytest -v
 ```
-Locally:
+Locally backend:
 ```bash
 pytest -v
+```
+E2E tests (Playwright)
+```bash
+npx playwright install
+npx playwright test
 ```
 ## 🧪 Integration Tests
 
@@ -132,17 +195,9 @@ Stop Docker:
 docker compose down -v
 ```
 🔐 Authentication
-
-Passwords are hashed using bcrypt:
-
-```bash
-from passlib.context import CryptContext
-```
-
-JWT is used for authentication:
-
-- HS256 algorithm
-- Expiry-based access tokens
+Passwords hashed using bcrypt
+JWT authentication (HS256)
+Token stored in browser localStorage
 
 📌 API Endpoints
 
