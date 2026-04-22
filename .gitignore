@@ -8,3 +8,6 @@ htmlcov
 .python-version
 .vscode
 .env
+node_modules/
+.vscode/
+test-results/
