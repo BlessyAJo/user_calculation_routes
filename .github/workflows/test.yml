@@ -39,11 +39,44 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests
+      - name: Run pytest
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fastapi_test_db
         run: pytest -v
+      # Node setup (Playwright frontend tests)
+      # -------------------------
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 25
 
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      # -------------------------
+      # Start FastAPI server
+      # -------------------------
+      - name: Start FastAPI server
+        run: |
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+
+      # -------------------------
+      # Start frontend server
+      # -------------------------
+      - name: Start frontend server
+        run: |
+          npx http-server ./frontend -p 8080 &
+          sleep 5
+
+      # -------------------------
+      # Run Playwright tests
+      # -------------------------
+      - name: Run Playwright E2E tests
+        run: npx playwright test
 
   deploy:
     needs: test
@@ -66,4 +99,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/user_calculation_routes:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/user_calculation_routes:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/user_calculation_routes:module-13
