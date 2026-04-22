@@ -8,7 +8,7 @@ from app.models import user, calculation
 
 from app.routes.user import router as user_router
 from app.routes.calculation import router as calculation_router
-
+from fastapi.middleware.cors import CORSMiddleware
 # Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -17,7 +17,13 @@ logger = logging.getLogger(__name__)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="User & Calculation Service")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # for assignment (safe for dev)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Exception Handlers
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
