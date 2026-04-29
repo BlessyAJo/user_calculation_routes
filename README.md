@@ -27,6 +27,23 @@ This project is a full-stack backend system built using FastAPI with PostgreSQL,
 
 ---
 
+## 🧪 Module 14 – Test Stabilization + Edge Cases + CI Improvements
+- Fixed failing Playwright E2E tests (timing issues, selectors, flaky navigation)
+- Stabilized login flow and ensured JWT token handling works correctly in tests
+- Added proper waits to handle async UI rendering (waitForSelector, toHaveURL)
+- Fixed edit and delete calculation test failures
+- Standardized API response handling (401 vs 403 issues)
+- Covered key edge cases:
+- Division by zero
+- Invalid operation types
+- Empty/invalid inputs
+- Unauthorized requests
+- Improved consistency between frontend validation and test expectations
+- Ensured CI pipeline runs frontend + backend + Playwright tests reliably
+- Verified Docker image build for module-14 release
+
+---
+
 ## 🛠️ Tech Stack
 
 - FastAPI
@@ -66,6 +83,8 @@ frontend/
 ├── register.html
 
 ├── login.html
+
+├── dashboard.html
 
 └── app.js
 
@@ -182,6 +201,10 @@ E2E tests (Playwright)
 npx playwright install
 npx playwright test
 ```
+Run specific test file
+```bash
+npx playwright test tests/e2e/calculations.spec.js
+```
 ## 🧪 Integration Tests
 
 Integration tests verify the full system including:
@@ -195,9 +218,9 @@ Stop Docker:
 docker compose down -v
 ```
 🔐 Authentication
-Passwords hashed using bcrypt
-JWT authentication (HS256)
-Token stored in browser localStorage
+- Passwords hashed using bcrypt
+- JWT authentication (HS256)
+- Token stored in browser localStorage
 
 📌 API Endpoints
 
