@@ -73,7 +73,7 @@ def test_login_success(client):
     assert response.status_code == 200
     data = response.json()
 
-    assert "access_token" in data
+    assert "access_token" is not None
     assert data["user"]["username"] == "loginuser"
 
 
