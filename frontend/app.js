@@ -105,17 +105,17 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
 document.getElementById("calcForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const a = Number(document.getElementById("a").value);
-    const b = Number(document.getElementById("b").value);
+    const aValue = document.getElementById("a").value;
+    const bValue = document.getElementById("b").value;
     const type = document.getElementById("type").value;
 
-    // const msgEl = document.getElementById("createMsg");
-
     // VALIDATION
-        if (a === "" || b === "") {
+        if (aValue === "" || bValue === "") {
         showMessage("Both numbers are required");
         return;
     }
+    const a = Number(aValue);
+    const b = Number(bValue);
 
     if (isNaN(a) || isNaN(b)) {
         showMessage("Only numbers allowed");
@@ -140,11 +140,8 @@ document.getElementById("calcForm")?.addEventListener("submit", async (e) => {
         const data = await res.json();
 
         showMessage(res.ok
-            ? `Result = ${data.result}`
+            ? document.getElementById("calcForm").reset()
             : data.detail);
-        if(res.ok){
-            document.getElementById("calcForm").reset();
-        }
         loadCalculations();
 
     } catch (err) {
@@ -262,8 +259,11 @@ function deleteCalc(id) {
         headers: {
             "Authorization": "Bearer " + localStorage.getItem("token")
         }
-    }).then(() => loadCalculations()
-    .catch(() => showMessage("Delete failed")));
+    }).then(()=> {
+        showMessage("Calculation deleted successfully");
+        loadCalculations();
+    })
+    .catch(() => showMessage("Delete failed"));
 }
 
 function logout() {
