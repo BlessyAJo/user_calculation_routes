@@ -10,14 +10,17 @@ test('user can register successfully', async ({ page }) => {
 
   await page.fill('#first_name', 'John');
   await page.fill('#last_name', 'Doe');
-  await page.fill('#email', `john${Date.now()}@test.com`);
-  await page.fill('#username', `john${Date.now()}`);
+  const unique = Date.now();
+  await page.fill('#email', `john${unique}@test.com`);
+  await page.fill('#username', `john${unique}`);
   await page.fill('#password', 'password123234567890');
 
   await page.click('button[type="submit"]');
 
   const message = page.locator('#message');
-  await expect(message).toContainText('Registration successful');
+  await page.waitForTimeout(300);
+  await expect(message).toBeVisible();
+  await expect(message).toContainText(/registration successful/i);
 });
 
 // -------------------------
@@ -27,9 +30,8 @@ test('register fails when fields are empty', async ({ page }) => {
   await page.goto('http://localhost:8080/register.html');
 
   await page.click('button[type="submit"]');
-
   await expect(page.locator('#message'))
-    .toHaveText(/all fields are required/i);
+    .toContainText(/all fields are required/i);
 });
 
 test('register fails with short password', async ({ page }) => {
@@ -88,8 +90,7 @@ test('login succeeds and stores token', async ({ page }) => {
 
   await page.click('button[type="submit"]');
 
-  await expect(page.locator('#message')).toHaveText(/login successful/i);
-
+  await expect(page).toHaveURL(/dashboard.html/);
   const token = await page.evaluate(() =>
     localStorage.getItem('token')
   );
@@ -111,4 +112,14 @@ test('login fails with wrong credentials', async ({ page }) => {
 
   const message = page.locator('#message');
   await expect(message).toContainText('Invalid credentials');
+});
+
+test('blocks dashboard access without login', async ({ page }) => {
+  await page.goto('http://localhost:8080/dashboard.html');
+  await expect(page).toHaveURL(/login.html/);
+});
+test('redirects to login if not authenticated', async ({ page }) => {
+  await page.goto('http://localhost:8080/dashboard.html');
+
+  await expect(page).toHaveURL(/login.html/);
 });

@@ -61,3 +61,30 @@ def test_user():
         "username": "johndoe",
         "password": "securepass123"
     }
+
+@pytest.fixture
+def auth_headers(client):
+
+    # ensure user exists
+    client.post("/users/register", json={
+        "first_name": "Test",
+        "last_name": "User",
+        "email": "test@mail.com",
+        "username": "testuser",
+        "password": "testpassword"
+    })
+
+    # login
+    login_res = client.post("/users/login", json={
+        "username": "testuser",
+        "password": "testpassword"
+    })
+
+    data = login_res.json()
+    token = data.get("access_token") or data.get("token")
+
+    assert token, f"Login failed: {data}"
+
+    return {
+        "Authorization": f"Bearer {token}"
+    }
