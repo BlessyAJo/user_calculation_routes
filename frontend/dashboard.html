@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="dashboard-page">
+
+<div class="header">
+    <h2>Calculations Dashboard</h2>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+    <!-- CREATE -->
+    <div class="card">
+        <h3>New Calculation</h3>
+
+        <form id="calcForm" class="form">
+            <input type="number" id="a" placeholder="Enter A"  />
+            <input type="number" id="b" placeholder="Enter B"  />
+
+            <select id="type">
+                <option value="addition">Addition</option>
+                <option value="subtraction">Subtraction</option>
+                <option value="multiplication">Multiplication</option>
+                <option value="division">Division</option>
+            </select>
+
+            <button type="submit">Calculate</button>
+        </form>
+        <p id="message" class="message"></p>
+    </div>
+
+    <!-- LIST -->
+    <div class="card">
+        <h3>Your Calculations</h3>
+        <ul id="list" class="list"></ul>
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+<script>
+loadCalculations();
+</script>
+<!-- EDIT MODAL -->
+<div id="editModal" class="modal hidden">
+  <div class="modal-content">
+
+    <h3>Edit Calculation</h3>
+
+    <input type="number" id="editA" placeholder="Enter A">
+    <input type="number" id="editB" placeholder="Enter B">
+
+    <select id="editType">
+      <option value="addition">Addition</option>
+      <option value="subtraction">Subtraction</option>
+      <option value="multiplication">Multiplication</option>
+      <option value="division">Division</option>
+    </select>
+
+    <div class="modal-actions">
+      <button class="update-btn" onclick="submitEdit()">Update</button>
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+    </div>
+
+    <p id="editMsg" class="message"></p>
+
+  </div>
+</div>
+</body>
+</html>

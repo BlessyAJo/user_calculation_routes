@@ -1,5 +1,11 @@
 const API_URL = "http://localhost:8000";
+if (window.location.pathname.includes("dashboard.html")) {
+    const token = localStorage.getItem("token");
 
+    if (!token) {
+        window.location.href = "login.html";
+    }
+}
 // ---------------- REGISTER ----------------
 document.getElementById("registerForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -30,8 +36,8 @@ document.getElementById("registerForm")?.addEventListener("submit", async (e) =>
     return;
   }
 
-  try {
-    const res = await fetch("http://localhost:8000/users/register", {
+  try { 
+    const res = await fetch(`${API_URL}/users/register`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(payload)
@@ -44,11 +50,15 @@ document.getElementById("registerForm")?.addEventListener("submit", async (e) =>
     } catch {}
 
     const msg = res.ok
-      ? "Registration successful"
+      ? "Registration successful" 
       : (data.detail || data.error || "User already exists");
 
     showMessage(msg);
-
+    if (res.ok) {
+        setTimeout(() => {
+            window.location.href = "login.html";
+        }, 1000);
+    }
   } catch {
     showMessage("Server error");
   }
@@ -56,7 +66,7 @@ document.getElementById("registerForm")?.addEventListener("submit", async (e) =>
 function showMessage(msg) {
   const el = document.getElementById("message");
   el.textContent = msg;
-//   el.style.display = "block";
+  el.style.display = "block";
 }
 
 // ---------------- LOGIN ----------------
@@ -80,6 +90,9 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
         if (res.ok) {
             localStorage.setItem("token", data.access_token);
             showMessage("Login successful");
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 800);
         } else {
             showMessage(data.detail || "Invalid credentials");
         }
@@ -88,3 +101,172 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
         showMessage("Server not reachable");
     }
 });
+
+document.getElementById("calcForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const a = Number(document.getElementById("a").value);
+    const b = Number(document.getElementById("b").value);
+    const type = document.getElementById("type").value;
+
+    // const msgEl = document.getElementById("createMsg");
+
+    // VALIDATION
+        if (a === "" || b === "") {
+        showMessage("Both numbers are required");
+        return;
+    }
+
+    if (isNaN(a) || isNaN(b)) {
+        showMessage("Only numbers allowed");
+        return;
+    }
+
+    if (type === "division" && b === 0) {
+        showMessage("Cannot divide by zero");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/calculations/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({ a, b, type })
+        });
+
+        const data = await res.json();
+
+        showMessage(res.ok
+            ? `Result = ${data.result}`
+            : data.detail);
+        if(res.ok){
+            document.getElementById("calcForm").reset();
+        }
+        loadCalculations();
+
+    } catch (err) {
+        showMessage("Server error");
+    }
+});
+
+// ---------------- LOAD (BROWSE) ----------------
+function loadCalculations() {
+    fetch(`${API_URL}/calculations/`, {
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const list = document.getElementById("list");
+        list.innerHTML = "";
+        if (data.length === 0) {
+            list.innerHTML = "<p>No calculations yet</p>";
+        }
+        data.forEach(calc => {
+            const li = document.createElement("li");
+
+            li.innerHTML = `
+                <div>
+                    ${calc.a} ${calc.type} ${calc.b}
+                    <b>= ${calc.result}</b>
+                </div>
+
+                <div class="actions">
+                    <button onclick="viewCalc('${calc.id}')">View</button>
+                    <button onclick="editCalc('${calc.id}')">Edit</button>
+                    <button onclick="deleteCalc('${calc.id}')">Delete</button>
+                </div>
+            `;
+
+            list.appendChild(li);
+        });
+    });
+}
+
+// ---------------- READ ----------------
+function viewCalc(id) {
+    fetch(`${API_URL}/calculations/${id}`, {
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(
+            `A: ${data.a}\nB: ${data.b}\nType: ${data.type}\nResult: ${data.result}`
+        );
+    });
+}
+
+// ---------------- EDIT ----------------
+let currentEditId = null;
+function editCalc(id) {
+    currentEditId = id;
+
+    fetch(`${API_URL}/calculations/${id}`, {
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("editA").value = data.a;
+        document.getElementById("editB").value = data.b;
+        document.getElementById("editType").value = data.type;
+
+        document.getElementById("editModal").classList.remove("hidden");
+    });
+}
+
+function submitEdit() {
+    const a = Number(document.getElementById("editA").value);
+    const b = Number(document.getElementById("editB").value);
+    const type = document.getElementById("editType").value;
+
+    if (isNaN(a) || isNaN(b) || !type) return;
+
+
+    if (type === "division" && b === 0) {
+        showMessage("Cannot divide by zero");
+        return;
+    }
+
+    fetch(`${API_URL}/calculations/${currentEditId}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        },
+        body: JSON.stringify({ a, b, type })
+    })
+    .then(res => res.json())
+    .then(() => {
+        loadCalculations();
+    })
+    .catch(() => showMessage("Operation failed"));
+    closeModal();
+}
+
+function closeModal() {
+    document.getElementById("editModal").classList.add("hidden");
+}
+
+// ---------------- DELETE ----------------
+function deleteCalc(id) {
+    fetch(`${API_URL}/calculations/${id}`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+    }).then(() => loadCalculations()
+    .catch(() => showMessage("Delete failed")));
+}
+
+function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
+}
