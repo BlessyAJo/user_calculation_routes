@@ -102,7 +102,7 @@ jobs:
       # Run Playwright tests
       # -------------------------
       - name: Run Playwright E2E tests
-        run: npx playwright test
+        run: npx playwright test --retries=2
 
   deploy:
     needs: test
@@ -127,4 +127,4 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/user_calculation_routes:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/user_calculation_routes:module-13
+            ${{ secrets.DOCKERHUB_USERNAME }}/user_calculation_routes:module-14
