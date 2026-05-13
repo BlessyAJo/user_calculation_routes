@@ -1,7 +1,7 @@
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
-
+from app.core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -16,7 +16,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 # -------------------------
 # JWT CONFIG
 # -------------------------
-SECRET_KEY = "your-secret-key"  # for assignment only
+SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

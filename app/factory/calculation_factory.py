@@ -9,7 +9,8 @@ class CalculationFactory:
             "addition": lambda a, b: a + b,
             "subtraction": lambda a, b: a - b,
             "multiplication": lambda a, b: a * b,
-            "division": lambda a, b: a / b if b != 0 else (_ for _ in ()).throw(ValueError("Division by zero is not allowed"))
+            "division": lambda a, b: a / b if b != 0 else (_ for _ in ()).throw(ValueError("Division by zero is not allowed")),
+            "power": lambda a, b: a ** b
         }
 
         try:

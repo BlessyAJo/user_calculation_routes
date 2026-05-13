@@ -21,7 +21,7 @@ class Calculation(Base):
         index=True
     )
 
-    # Operation type: addition, subtraction, multiplication, division
+    # Operation type: addition, subtraction, multiplication, division, power
     type = Column(String(50), nullable=False, index=True)
 
     # Inputs
