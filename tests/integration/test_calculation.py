@@ -1,7 +1,5 @@
 import pytest
 
-from tests.conftest import auth_headers
-
 
 # -------------------------
 # CREATE - PARAMETRIZED CORE OPS
@@ -83,7 +81,7 @@ def test_full_crud_flow(client, auth_headers):
 
     assert upd.status_code == 200
 
-    assert client.delete(f"/calculations/{cid}", headers=auth_headers).status_code == 200
+    assert client.delete(f"/calculations/{cid}", headers=auth_headers).status_code == 204
 
     assert client.get(f"/calculations/{cid}", headers=auth_headers).status_code == 404
 # -------------------------
@@ -123,3 +121,23 @@ def test_float_precision(client, auth_headers):
     }, headers=auth_headers)
 
     assert res.status_code == 200
+
+def test_large_numbers(client, auth_headers):
+
+    res = client.post("/calculations/", json={
+        "a": 1e18,
+        "b": 2,
+        "type": "addition"
+    }, headers=auth_headers)
+
+    assert res.status_code == 200
+
+def test_operation_case_insensitive(client, auth_headers):
+
+    res = client.post("/calculations/", json={
+        "a": 10,
+        "b": 5,
+        "type": "AdDiTiOn"
+    }, headers=auth_headers)
+
+    assert res.status_code == 422

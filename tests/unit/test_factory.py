@@ -14,6 +14,8 @@ from app.factory.calculation_factory import CalculationFactory
         (10, 5, "division", 2),
         (-10, 5, "addition", -5),
         (2.5, 2, "multiplication", 5.0),
+        (1e10, 2, "multiplication", 2e10),
+        (3, 4, "power", 81)
     ]
 )
 def test_factory_valid_operations(a, b, op, expected):
