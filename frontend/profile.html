@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body class="dashboard-page">
+
+<div class="header">
+
+    <h2>Profile Settings</h2>
+
+    <div class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+
+        <button class="logout-btn" onclick="logout()">
+            Logout
+        </button>
+    </div>
+
+</div>
+
+<div class="container">
+
+    <!-- PROFILE -->
+    <div class="card">
+
+        <h3>Update Profile</h3>
+
+        <form id="profileForm" class="form">
+
+            <input type="text" id="profile_first_name" placeholder="First Name">
+
+            <input type="text" id="profile_last_name" placeholder="Last Name">
+
+            <input type="email" id="profile_email" placeholder="Email">
+
+            <input type="text" id="profile_username" placeholder="Username">
+
+            <button type="submit">
+                Update Profile
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- PASSWORD -->
+    <div class="card">
+
+        <h3>Change Password</h3>
+
+        <form id="passwordForm" class="form">
+
+            <input
+                type="password"
+                id="current_password"
+                placeholder="Current Password"
+            >
+
+            <input
+                type="password"
+                id="new_password"
+                placeholder="New Password"
+            >
+
+            <button type="submit">
+                Change Password
+            </button>
+
+        </form>
+
+    </div>
+
+    <p id="message" class="message"></p>
+
+</div>
+
+<script src="app.js"></script>
+
+<script>
+loadProfile();
+</script>
+
+</body>
+</html>

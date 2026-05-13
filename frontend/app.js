@@ -1,11 +1,21 @@
 const API_URL = "http://localhost:8000";
-if (window.location.pathname.includes("dashboard.html")) {
-    const token = localStorage.getItem("token");
+// if (window.location.pathname.includes("dashboard.html") ||
+//     window.location.pathname.includes("profile.html")) {
+//     const token = localStorage.getItem("token");
 
-    if (!token) {
-        window.location.href = "login.html";
-    }
-}
+//     if (!token) {
+//         window.location.href = "login.html";
+//     }
+// }
+// window.addEventListener("DOMContentLoaded", () => {
+//     const token = localStorage.getItem("token");
+
+//     if (!token &&
+//         (window.location.pathname.includes("dashboard.html") ||
+//          window.location.pathname.includes("profile.html"))) {
+//         window.location.href = "login.html";
+//     }
+// });
 // ---------------- REGISTER ----------------
 document.getElementById("registerForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -84,15 +94,19 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(payload)
         });
-
+        if (!payload.username || !payload.password) {
+            showMessage("All fields are required");
+            return;
+        }
         const data = await res.json().catch(() => ({}));
 
         if (res.ok) {
             localStorage.setItem("token", data.access_token);
             showMessage("Login successful");
-            setTimeout(() => {
+            // setTimeout(() => {
                 window.location.href = "dashboard.html";
-            }, 800);
+            // }, 300);
+            // window.location.href = "dashboard.html";
         } else {
             showMessage(data.detail || "Invalid credentials");
         }
@@ -136,12 +150,22 @@ document.getElementById("calcForm")?.addEventListener("submit", async (e) => {
             },
             body: JSON.stringify({ a, b, type })
         });
+        if (res.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+            return;
+        }
 
         const data = await res.json();
-
-        showMessage(res.ok
-            ? document.getElementById("calcForm").reset()
-            : data.detail);
+        if (res.ok) {
+            document.getElementById("calcForm").reset();
+            showMessage("Calculation created successfully");
+        } else {
+            showMessage(data.detail || data.error);
+        }
+        // showMessage(res.ok
+        //     ? document.getElementById("calcForm").reset()
+        //     : data.detail);
         loadCalculations();
 
     } catch (err) {
@@ -156,7 +180,14 @@ function loadCalculations() {
             "Authorization": "Bearer " + localStorage.getItem("token")
         }
     })
-    .then(res => res.json())
+    .then(res => {
+        if (res.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+            return;
+        }
+        return res.json();
+    })
     .then(data => {
         const list = document.getElementById("list");
         list.innerHTML = "";
@@ -191,7 +222,14 @@ function viewCalc(id) {
             "Authorization": "Bearer " + localStorage.getItem("token")
         }
     })
-    .then(res => res.json())
+    .then(res => {
+        if (res.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+            return;
+        }
+        return res.json();
+    })
     .then(data => {
         alert(
             `A: ${data.a}\nB: ${data.b}\nType: ${data.type}\nResult: ${data.result}`
@@ -209,7 +247,14 @@ function editCalc(id) {
             "Authorization": "Bearer " + localStorage.getItem("token")
         }
     })
-    .then(res => res.json())
+    .then(res => {
+        if (res.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+            return;
+        }
+        return res.json();
+    })
     .then(data => {
         document.getElementById("editA").value = data.a;
         document.getElementById("editB").value = data.b;
@@ -219,33 +264,50 @@ function editCalc(id) {
     });
 }
 
-function submitEdit() {
+async function submitEdit() {
     const a = Number(document.getElementById("editA").value);
     const b = Number(document.getElementById("editB").value);
     const type = document.getElementById("editType").value;
 
-    if (isNaN(a) || isNaN(b) || !type) return;
-
+    if (isNaN(a) || isNaN(b) || !type) {
+        showMessage("Invalid input values");
+        return;
+    }
 
     if (type === "division" && b === 0) {
         showMessage("Cannot divide by zero");
         return;
     }
+    try {
 
-    fetch(`${API_URL}/calculations/${currentEditId}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + localStorage.getItem("token")
-        },
-        body: JSON.stringify({ a, b, type })
-    })
-    .then(res => res.json())
-    .then(() => {
-        loadCalculations();
-    })
-    .catch(() => showMessage("Operation failed"));
-    closeModal();
+        const res = await fetch(`${API_URL}/calculations/${currentEditId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({ a, b, type })
+        });
+
+        if (res.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+            return;
+        }
+
+        const data = await res.json();
+
+        if (res.ok) {
+            showMessage("Calculation updated");
+            loadCalculations();
+            closeModal();
+        } else {
+            showMessage(data.detail || data.error);
+        }
+
+    } catch {
+        showMessage("Operation failed");
+    }
 }
 
 function closeModal() {
@@ -259,12 +321,149 @@ function deleteCalc(id) {
         headers: {
             "Authorization": "Bearer " + localStorage.getItem("token")
         }
-    }).then(()=> {
-        showMessage("Calculation deleted successfully");
-        loadCalculations();
+    }).then((res)=> {
+        if (res.status === 204) {
+            showMessage("Calculation deleted successfully");
+            loadCalculations();
+        } else if (res.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+        } else {
+            showMessage("Delete failed");
+        }
     })
     .catch(() => showMessage("Delete failed"));
 }
+
+async function loadProfile() {
+        const token = localStorage.getItem("token");
+
+    if (!token) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    const res = await fetch(`${API_URL}/users/me`, {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    });
+
+    if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+        return;
+    }
+
+    const data = await res.json();
+
+    document.getElementById("profile_first_name").value = data.first_name;
+    document.getElementById("profile_last_name").value = data.last_name;
+    document.getElementById("profile_email").value = data.email;
+    document.getElementById("profile_username").value = data.username;
+}
+
+document.getElementById("profileForm")?.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const payload = {
+        first_name: document.getElementById("profile_first_name").value,
+        last_name: document.getElementById("profile_last_name").value,
+        email: document.getElementById("profile_email").value,
+        username: document.getElementById("profile_username").value
+    };
+
+    try {
+
+        const res = await fetch(`${API_URL}/users/me`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+            return;
+        }
+
+        const data = await res.json();
+
+        if (res.ok) {
+            showMessage("Profile updated successfully");
+        } else {
+            if (data.detail?.toLowerCase().includes("email")) {
+                showMessage("Email already exists");
+            } else if (data.detail?.toLowerCase().includes("username")) {
+                showMessage("Username already exists");
+            } else if (data.detail?.toLowerCase().includes("invalid email")) {
+                showMessage("Invalid email");
+            } else {
+                showMessage(data.detail || data.error || "Profile update failed");
+            }
+        }
+    } catch {
+        showMessage("Profile update failed");
+    }
+});
+
+document.getElementById("passwordForm")?.addEventListener("submit", async (e) => {
+
+    e.preventDefault();
+
+    const payload = {
+        current_password: document.getElementById("current_password").value,
+        new_password: document.getElementById("new_password").value
+    };
+    if (!payload.current_password || !payload.new_password) {
+        showMessage("All password fields are required");
+        return;
+    }
+
+    if (payload.new_password.length < 12) {
+        showMessage("New password must be at least 12 characters");
+        return;
+    }
+
+    try {
+
+        const res = await fetch(`${API_URL}/users/change-password`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+            return;
+        }
+
+        const data = await res.json();
+
+        if (res.ok) {
+
+            showMessage("Password updated successfully. Please login again.");
+            localStorage.removeItem("token");
+            // setTimeout(() => {
+                window.location.href = "login.html";
+            // }, 3000);
+        } else {
+            showMessage(data.detail || data.error);
+        }
+
+    } catch {
+        showMessage("Password change failed");
+    }
+});
+
 
 function logout() {
     localStorage.removeItem("token");
