@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-
 async function login(page) {
   const unique = Date.now();
 
@@ -12,9 +11,7 @@ async function login(page) {
   await page.fill('#password', 'password123456');
 
   await page.click('button[type="submit"]');
-
-  await expect(page.locator('#message'))
-    .toContainText(/registration successful/i);
+  await expect(page.locator('#message')).toContainText(/registration successful/i);
 
   await page.goto('http://localhost:8080/login.html');
 
@@ -22,15 +19,15 @@ async function login(page) {
   await page.fill('#password', 'password123456');
 
   await page.click('button[type="submit"]');
-
-  await expect(page.locator('#message'))
-    .toContainText(/login successful/i);
+  await Promise.all([
+    page.waitForURL(/dashboard.html/),
+    page.click('button[type="submit"]')
+  ]);
 
   await page.goto('http://localhost:8080/dashboard.html');
 }
 test('create calculation', async ({ page }) => {
   await login(page);
-
   await page.fill('#a', '10');
   await page.fill('#b', '5');
   await page.selectOption('#type', 'addition');
@@ -43,17 +40,12 @@ test('create calculation', async ({ page }) => {
 test('browse calculations', async ({ page }) => {
   await login(page);
 
-  await page.goto('http://localhost:8080/dashboard.html');
-
   await expect(page.locator('#list')).toBeVisible();
 });
 
 test('edit calculation', async ({ page }) => {
   await login(page);
 
-  await page.goto('http://localhost:8080/dashboard.html');
-
-  // ✅ CREATE first (this is what you're missing)
   await page.fill('#a', '10');
   await page.fill('#b', '5');
   await page.selectOption('#type', 'addition');
@@ -79,9 +71,7 @@ test('edit calculation', async ({ page }) => {
 test('delete calculation', async ({ page }) => {
   await login(page);
 
-  await page.goto('http://localhost:8080/dashboard.html');
-
-  // ✅ CREATE first
+  // CREATE first
   await page.fill('#a', '10');
   await page.fill('#b', '5');
   await page.selectOption('#type', 'addition');
@@ -125,20 +115,10 @@ test('blocks calculation API without token', async ({ request }) => {
   expect(res.status()).toBe(403);
 });
 
-test('rejects invalid operation type', async ({ page }) => {
+test('session persists after refresh', async ({ page }) => {
   await login(page);
 
-  await page.goto('http://localhost:8080/dashboard.html');
+  await page.reload();
 
-  // Force invalid request manually (bypass dropdown)
-  await page.evaluate(() => {
-    fetch('http://localhost:8000/calculations/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + localStorage.getItem('token')
-      },
-      body: JSON.stringify({ a: 10, b: 5, type: 'modulus' })
-    });
-  });
+  await expect(page).toHaveURL(/dashboard.html/);
 });

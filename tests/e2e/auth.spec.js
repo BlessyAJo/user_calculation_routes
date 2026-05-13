@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-
+import { register, registerAndLogin } from './helpers/auth';
 const BASE = 'http://localhost:8080';
 
 // -------------------------
@@ -64,6 +64,16 @@ test('register fails with invalid email', async ({ page }) => {
     .toHaveText(/invalid email/i);
 });
 
+test('register fails with duplicate username', async ({ page }) => {
+  const user = `dup${Date.now()}`;
+
+  await register(page, user);
+  await register(page, user); // second attempt
+
+  await expect(page.locator('#message'))
+    .toContainText(/already exists/i);
+});
+
 // -------------------------
 // LOGIN SUCCESS
 // -------------------------
@@ -91,11 +101,31 @@ test('login succeeds and stores token', async ({ page }) => {
   await page.click('button[type="submit"]');
 
   await expect(page).toHaveURL(/dashboard.html/);
-  const token = await page.evaluate(() =>
+
+    await page.waitForLoadState('networkidle');
+
+  // VERIFY TOKEN
+  let token = await page.evaluate(() =>
     localStorage.getItem('token')
   );
-
   expect(token).toBeTruthy();
+
+  // WAIT FOR LOGOUT BUTTON
+  const logoutBtn = page.locator('.logout-btn');
+  await expect(logoutBtn).toBeVisible();
+
+  // CLICK LOGOUT
+  await logoutBtn.click();
+
+  // VERIFY REDIRECT
+  await expect(page).toHaveURL(/login.html/);
+
+  // VERIFY TOKEN CLEARED
+  token = await page.evaluate(() =>
+    localStorage.getItem('token')
+  );
+  expect(token).toBeNull();
+  
 });
 
 
@@ -116,10 +146,5 @@ test('login fails with wrong credentials', async ({ page }) => {
 
 test('blocks dashboard access without login', async ({ page }) => {
   await page.goto('http://localhost:8080/dashboard.html');
-  await expect(page).toHaveURL(/login.html/);
-});
-test('redirects to login if not authenticated', async ({ page }) => {
-  await page.goto('http://localhost:8080/dashboard.html');
-
   await expect(page).toHaveURL(/login.html/);
 });
