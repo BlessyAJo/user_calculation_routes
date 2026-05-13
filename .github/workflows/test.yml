@@ -9,7 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fastapi_test_db
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
     services:
       postgres:
         image: postgres:15
