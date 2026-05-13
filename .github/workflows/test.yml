@@ -127,4 +127,4 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/user_calculation_routes:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/user_calculation_routes:module-14
+            ${{ secrets.DOCKERHUB_USERNAME }}/user_calculation_routes:module-final
