@@ -3,10 +3,11 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate, UserRead, UserLogin, Token
+from app.schemas.user import UserCreate, UserRead, UserLogin, Token, UserUpdate, PasswordChange
 from app.utils.security import hash_password, verify_password
 import logging
 from app.utils.security import create_access_token
+from app.utils.deps import get_current_user
 router = APIRouter()
 
 
@@ -61,6 +62,76 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
     }
 
 
+@router.get("/me", response_model=UserRead)
+def get_current_logged_user(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@router.put("/me", response_model=UserRead)
+def update_profile(
+    payload: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    # if not payload.first_name or not payload.last_name or not payload.email or not payload.username:
+    #     raise HTTPException(status_code=400, detail="All fields are required")
+
+    # payload.first_name = payload.first_name.strip()
+    # payload.last_name = payload.last_name.strip()
+    # payload.email = payload.email.strip()
+    # payload.username = payload.username.strip()
+
+    existing_email = db.query(User).filter(
+        User.email == payload.email,
+        User.id != current_user.id
+    ).first()
+
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already in use")
+
+    existing_username = db.query(User).filter(
+        User.username == payload.username,
+        User.id != current_user.id
+    ).first()
+
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Username already in use")
+    
+    current_user.first_name = payload.first_name
+    current_user.last_name = payload.last_name
+    current_user.email = payload.email
+    current_user.username = payload.username
+
+    db.commit()
+    db.refresh(current_user)
+
+    return current_user
+
+@router.put("/change-password")
+def change_password(
+    payload: PasswordChange,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    if not payload.current_password or not payload.new_password:
+        raise HTTPException(status_code=400, detail="All fields are required")
+
+    if len(payload.new_password) < 12:
+        raise HTTPException(status_code=400, detail="Password must be at least 12 characters")
+
+    if verify_password(payload.new_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="New password cannot be same as old password")
+
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password incorrect")
+
+    current_user.password_hash = hash_password(payload.new_password)
+
+    db.commit()
+
+    return {"message": "Password updated successfully"}
+
 # -------------------------
 # GET ALL USERS (optional)
 # -------------------------
@@ -68,7 +139,6 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 def get_users(db: Session = Depends(get_db)):
     logger.info("Fetching all users")
     return db.query(User).all()
-
 
 # -------------------------
 # GET USER BY ID

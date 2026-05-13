@@ -12,7 +12,7 @@ class UserCreate(BaseModel):
     last_name: str
     email: EmailStr
     username: str
-    password: str = Field(min_length=6)
+    password: str
 
 
 # -------------------------
@@ -62,3 +62,14 @@ class Token(BaseModel):
 # -------------------------
 class TokenData(BaseModel):
     user_id: Optional[UUID] = None
+
+class UserUpdate(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    username: str
+
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str

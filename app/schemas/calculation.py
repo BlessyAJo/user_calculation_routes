@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict
 class CalculationCreate(BaseModel):
     a: float
     b: float
-    type: Literal["addition", "subtraction", "multiplication", "division"]
+    type: Literal["addition", "subtraction", "multiplication", "division", "power"]
 
 
 # -------------------------
@@ -19,7 +19,7 @@ class CalculationCreate(BaseModel):
 class CalculationUpdate(BaseModel):
     a: float | None = None
     b: float | None = None
-    type: Literal["addition", "subtraction", "multiplication", "division"] | None = None
+    type: Literal["addition", "subtraction", "multiplication", "division", "power"] | None = None
 
 
 # -------------------------
@@ -31,7 +31,7 @@ class CalculationRead(BaseModel):
 
     a: float
     b: float
-    type: Literal["addition", "subtraction", "multiplication", "division"]
+    type: Literal["addition", "subtraction", "multiplication", "division", "power"]
     result: float | None = None
 
     model_config = ConfigDict(from_attributes=True)

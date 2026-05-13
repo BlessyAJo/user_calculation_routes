@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 import logging
 
@@ -118,7 +118,6 @@ def update_calculation(
 # -------------------------
 @router.delete("/{calc_id}")
 def delete_calculation(calc_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-
     logger.info(f"Deleting calculation: {calc_id}")
 
     calc = db.query(Calculation).filter(Calculation.id == calc_id, Calculation.user_id == current_user.id).first()
@@ -132,4 +131,4 @@ def delete_calculation(calc_id: str, db: Session = Depends(get_db), current_user
 
     logger.info(f"Calculation deleted: {calc_id}")
 
-    return {"message": "Calculation deleted successfully"}
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
